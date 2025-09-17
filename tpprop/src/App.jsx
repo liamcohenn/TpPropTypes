@@ -48,7 +48,7 @@ export default function App() {
   return (
     <div className="container">
       <header className="header">
-        <h1>MailAméricas — Sistema de Gestión de Pedidos</h1>
+        <h1>PedidosAhora — Sistema de Gestión de Pedidos</h1>
         <p className="subtitle">
           Visualización, filtros por estado y validación con PropTypes.
         </p>

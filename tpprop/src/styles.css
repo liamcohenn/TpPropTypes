@@ -1,6 +1,6 @@
 /* ===== Reset mínimo y tipografías ===== */
 * { box-sizing: border-box; }
-html, body, #root { min-height: 100%; }
+html, body, #root { min-height: 100%; width: 100%; }
 body { min-height: 100vh; }
 html { font-size: 16px; }
 body {
@@ -8,15 +8,19 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
   color: #e5e7eb;
   background: radial-gradient(1200px 600px at 20% -10%, #1d2549 0%, #0b1022 40%, #0a0f1f 100%);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ===== Tokens de color ===== */
 :root {
   --bg: #0b1022;
-  --surface: #111827;   /* cards */
+  --surface: #111827;   /* fallback */
   --muted: #9ca3af;
   --text: #e5e7eb;
-  --primary: #7c3aed;
+
+  --primary: #7c3aed;           /* base */
+  --primary-2: #e100ff;         /* para gradientes */
+  --accent: #00d9f5;
 
   --border: #1f2937;
 
@@ -25,15 +29,26 @@ body {
   --delivered: #10b981;
 
   --danger: #ef4444;
+
+  --glass: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.15);
 }
 
 /* ===== Layout general ===== */
-.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.container {
+  width: 100%;
+  margin: 0;
+  padding: 24px;
+}
+
 .header { margin-bottom: 8px; }
 .header h1 {
   margin: 0 0 6px;
   font-size: clamp(1.6rem, 3vw, 2.4rem);
   letter-spacing: .2px;
+  background: linear-gradient(90deg, #00f5a0, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .subtitle { color: var(--muted); margin: 0 0 6px; }
 
@@ -48,24 +63,73 @@ body {
 }
 
 /* Filtro */
+/* ====== SOLO: estilo de la lista desplegable (Filtro) ====== */
+
+/* Contenedor del filtro (por si no lo tenías) */
 .filter {
   display: flex;
   gap: 8px;
   align-items: center;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--glass, rgba(255,255,255,0.06));
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.15));
   border-radius: 12px;
   padding: 10px 12px;
+  backdrop-filter: blur(10px);
 }
-.filter label { color: var(--muted); font-size: .95rem; }
+
+/* SELECT base */
 .filter select {
-  background: #0b1022;
-  color: var(--text);
-  border: 1px solid var(--border);
-  padding: 6px 8px;
-  border-radius: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  color-scheme: dark;                     /* ayuda a forzar popup oscuro */
+  background: rgba(255,255,255,0.08);
+  color: var(--text, #e5e7eb);
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.15));
+  padding: 10px 42px 10px 12px;           /* espacio para el “chevron” */
+  border-radius: 10px;
+  min-height: 44px;
   outline: none;
+  cursor: pointer;
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  position: relative;
 }
+
+/* Indicador (chevron) dibujado con gradientes */
+.filter select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, #cfd3e7 50%),
+    linear-gradient(135deg, #cfd3e7 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* Hover / Focus */
+.filter select:hover { background: rgba(255,255,255,0.10); }
+.filter select:focus {
+  border-color: #9b8cff;
+  box-shadow: 0 0 0 3px rgba(155,140,255,.22);
+}
+
+/* Quita la flecha nativa en IE/Edge legado */
+.filter select::-ms-expand { display: none; }
+
+/* ===== Estilo del POPUP y opciones (limitado por navegador) ===== */
+.filter select option {
+  background: #151827;                    /* fondo del menú */
+  color: #e5e7eb;                         /* texto legible */
+  padding: 10px;                          /* más “click area” */
+}
+
+/* opción resaltada/hover (Chrome/Firefox respetan en la mayoría de casos) */
+.filter select option:checked,
+.filter select option:hover {
+  background: #22263b;
+  color: #ffffff;
+}
+
 
 /* Stats */
 .stats {
@@ -76,12 +140,14 @@ body {
   min-width: 520px;
 }
 .stat {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
   padding: 12px;
   display: grid;
   gap: 6px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
 }
 .stat-label { color: var(--muted); font-size: .9rem; }
 .stat-value { font-size: 1.4rem; font-weight: 800; }
@@ -89,9 +155,10 @@ body {
 /* ===== Contenido: lista + formulario ===== */
 .content {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 16px;
+  grid-template-columns: 2fr 1fr; /* más espacio para la lista */
+  gap: 24px;
   margin-top: 14px;
+  align-items: start; /* clave: no iguala alturas */
 }
 .left h2, .right h2 { margin: 8px 0 12px; font-size: 1.25rem; }
 
@@ -101,11 +168,12 @@ body {
 
 /* Card de pedido */
 .order-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
   border-radius: 14px;
   padding: 12px;
   box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
 }
 .order-head {
   display: flex;
@@ -119,14 +187,15 @@ body {
 .badge {
   text-transform: capitalize;
   font-size: .75rem;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
-  border: 1px solid var(--border);
+  color: #fff;
+  border: 0;
   letter-spacing: .2px;
 }
-.badge.pending   { background: color-mix(in srgb, var(--pending) 22%, transparent); }
-.badge.shipped   { background: color-mix(in srgb, var(--shipped) 22%, transparent); }
-.badge.delivered { background: color-mix(in srgb, var(--delivered) 22%, transparent); }
+.badge.pending   { background: linear-gradient(90deg, #f9d423, #ff4e50); }
+.badge.shipped   { background: linear-gradient(90deg, #36d1dc, #5b86e5); }
+.badge.delivered { background: linear-gradient(90deg, #56ab2f, #a8e063); }
 
 .order-meta {
   color: var(--muted);
@@ -139,14 +208,16 @@ body {
   list-style: none;  /* quita bullets */
   padding: 0;
   margin: 0;
-  border-top: 1px dashed var(--border);
+  border-top: 1px dashed var(--glass-border);
 }
 .order-item-row {
   display: grid;
-  grid-template-columns: 1fr 90px 110px 110px; /* nombre | qty | price | subtotal */
+  /* nombre | qty | price | subtotal | botón quitar */
+  grid-template-columns: 1fr 90px 110px 110px 100px;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--glass-border);
+  align-items: center; /* alinea inputs y botón a la misma altura */
 }
 .order-item-row .name {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -157,6 +228,9 @@ body {
   text-align: right;
 }
 
+/* Ajuste última fila sin borde */
+.order-items .order-item-row:last-child { border-bottom: none; }
+
 .order-total {
   display: flex;
   justify-content: flex-end;
@@ -164,88 +238,158 @@ body {
   font-size: 1.05rem;
 }
 
-/* ===== Formulario Nuevo Pedido ===== */
+/* ===== Formulario Nuevo Pedido (fix de campos) ===== */
 .form {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
   border-radius: 14px;
-  padding: 12px;
+  padding: 16px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
   box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  backdrop-filter: blur(10px);
 }
 
+/* Etiquetas + controles alineados y a 100% de ancho */
 .field { display: grid; gap: 6px; }
-.field label { color: var(--muted); }
-.field input, .field select {
-  background: #0b1022;
+.field label { color: #c5cae9; font-weight: 600; }
+.field input,
+.field select {
+  width: 100%;
+  min-height: 44px;                     /* alto consistente */
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.08);
   color: var(--text);
-  border: 1px solid var(--border);
-  padding: 10px 12px;
-  border-radius: 10px;
   outline: none;
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.field input::placeholder { color: #b9bfd6; opacity: .8; }
+
+.field input:focus,
+.field select:focus {
+  border-color: #9b8cff;
+  box-shadow: 0 0 0 3px rgba(155, 140, 255, .22);
+  background: rgba(255,255,255,0.11);
 }
 
-.items { display: grid; gap: 10px; }
+/* Select limpio y legible */
+.field select {
+  -webkit-appearance: none; appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #cfd3e7 50%),
+                    linear-gradient(135deg, #cfd3e7 50%, transparent 50%),
+                    linear-gradient(to right, transparent, transparent);
+  background-position: calc(100% - 20px) calc(50% - 3px),
+                       calc(100% - 14px) calc(50% - 3px),
+                       100% 0;
+  background-size: 6px 6px, 6px 6px, 2.5rem 100%;
+  background-repeat: no-repeat;
+}
+
+/* Date input con icono visible en dark */
+.field input[type="date"] {
+  -webkit-appearance: none; appearance: none;
+  padding-right: 40px;                  /* espacio para el indicador */
+}
+.field input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(.8);
+  cursor: pointer;
+}
+
+/* Bloque de productos */
+.items { display: grid; gap: 12px; }
 .items-head { display: flex; justify-content: space-between; align-items: center; }
+
+/* Fila de producto: nombre | qty | price | botón quitar */
 .item-row {
   display: grid;
-  grid-template-columns: 1fr 100px 120px 90px;
-  gap: 8px;
+  grid-template-columns: 1fr 110px 140px 120px;
+  gap: 10px;
+  align-items: center;
 }
-
-.total-preview { text-align: right; color: #d9e3ff; }
-
-.btn {
-  border: 1px solid var(--border);
-  background: #0b1022;
-  color: var(--text);
+.item-row input {
+  width: 100%;
+  min-height: 44px;
   padding: 10px 12px;
   border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
 }
-.btn:hover { filter: brightness(1.08); }
-.btn.primary { background: var(--primary); }
-.btn.danger  { background: var(--danger); }
 
-.error {
-  color: #ffb4b4;
-  background: #3b0b0b;
-  border: 1px solid #6e1e1e;
-  padding: 8px 10px;
-  border-radius: 8px;
+/* Botones consistentes con inputs */
+.btn {
+  border: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  background: rgba(255,255,255,0.10);
+  color: var(--text);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
-/* Que las columnas no intenten igualar alturas */
-.content {
-    align-items: start;              /* clave */
-  }
-  
-  .right {
-    position: sticky;
-    top: 12px;
-    height: fit-content;
-  }
-  
+.btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.btn:focus-visible { outline: 2px solid #9b8cff; outline-offset: 2px; }
+
+.btn.primary {
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  color: #fff;
+}
+.btn.danger  {
+  background: linear-gradient(90deg, #ff512f, #dd2476);
+  color: #fff;
+}
+
+/* Botón submit full-width dentro del form */
+.form button[type="submit"] { width: 100%; }
+
+/* Total estimado bien alineado */
+.total-preview {
+  text-align: right;
+  color: #d9e3ff;
+  font-weight: 700;
+}
+
+/* ===== Responsive del form ===== */
+@media (max-width: 980px) {
+  .item-row { grid-template-columns: 1fr 90px 110px 110px; }
+}
+@media (max-width: 560px) {
+  .item-row { grid-template-columns: 1fr; }
+  .items-head { flex-wrap: wrap; gap: 8px; }
+  .items-head .btn { width: 100%; }
+}
+
+/* ===== Sticky del panel derecho y scroll en la lista ===== */
+.right {
+  position: sticky;
+  top: 12px;
+  height: fit-content;
+}
 
 .left {
-    max-height: calc(100vh - 220px);
-    overflow: auto;
-    padding-right: 4px; 
-  }
-  
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  padding-right: 4px;
+}
 
-  .left::-webkit-scrollbar { width: 8px; }
-  .left::-webkit-scrollbar-thumb { background: #2a314f; border-radius: 8px; }
-  
+.left::-webkit-scrollbar { width: 8px; }
+.left::-webkit-scrollbar-thumb { background: #2a314f; border-radius: 8px; }
+
+/* ===== Grillas fluidas ===== */
+.stats { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); width: 100%; }
+.order-card, .form, .stat { width: 100%; }
 
 /* ===== Responsivo ===== */
 @media (max-width: 980px) {
   .stats { grid-template-columns: repeat(2, 1fr); min-width: 0; }
   .content { grid-template-columns: 1fr; }
-  .item-row { grid-template-columns: 1fr 90px 110px 90px; }
+  .item-row { grid-template-columns: 1fr 90px 110px 96px; }
 }
 @media (max-width: 560px) {
-  .order-item-row { grid-template-columns: 1fr 70px 90px 90px; }
+  .order-item-row { grid-template-columns: 1fr 70px 90px 90px 88px; }
   .stats { grid-template-columns: 1fr 1fr; }
 }
